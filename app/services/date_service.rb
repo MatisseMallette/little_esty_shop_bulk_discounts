@@ -9,4 +9,13 @@ class DateService
     end
     holidays[0..2]
   end
+
+  def options
+    {
+      headers: {
+        "Authorization": "Bearer #{ENV["GITHUB_ACCESS_KEY"]}",
+        "X-GitHub-Api-Version": "2022-11-28"
+      }
+    }
+  end
 end
