@@ -15,98 +15,15 @@ class Invoice < ApplicationRecord
     invoice_items.sum("unit_price * quantity")
   end
 
-  def total_invoice_revenue_without_discounts
-    regular_transactions = invoice_items
-    .joins(:bulk_discounts)
-    #.select('invoice_items.*, bulk_discount.threshold')
-    .where("invoice_items.quantity <= bulk_discounts.threshold")
-    .group('invoice_items.id')
-    .sum('invoice_items.quantity * invoice_items.unit_price')
-    .values
-    .sum
-
-    return regular_transactions
-  end
-
-
-  def total_invoice_revenue_with_discounts
-    discounted_transactions = invoice_items
-    .joins(:bulk_discounts)
-    #.select('invoice_items.*, bulk_discount.threshold')
-    .where("invoice_items.quantity > bulk_discounts.threshold")
-    .group('invoice_items.id')
-    .sum('((invoice_items.quantity * invoice_items.unit_price) / 100) * (100 - bulk_discounts.percentage)')
-    .values
-    .sum 
-
-    regular_transactions = invoice_items
-    .joins(:bulk_discounts)
-    #.select('invoice_items.*, bulk_discount.threshold')
-    .where("invoice_items.quantity <= bulk_discounts.threshold")
-    .group('invoice_items.id')
-    .sum('invoice_items.quantity * invoice_items.unit_price')
-    .values
-    .sum
-
-    return discounted_transactions + regular_transactions
+  def total_revenue_after_discounts 
+    invoice_items.sum { |ii| ii.absolute_cost }
   end
 
   def total_merchant_revenue(merchant) 
-    merchant.invoice_items.sum('invoice_items.quantity * invoice_items.unit_price')
+    merchant.invoice_items.sum { |ii| ii.cost_before_discount }
   end
 
-  def total_merchant_revenue_with_discounts(merchant) 
-    total_merchant_revenue(merchant) - merchant_invoice_items(merchant)
-    .joins(:bulk_discounts)
-    .where("invoice_items.quantity > bulk_discounts.threshold")
-    .group('invoice_items.id')
-    .sum('((invoice_items.quantity * invoice_items.unit_price) / 100) * bulk_discounts.percentage')
-    .values
-    .sum 
-  end
-
-private 
-  def has_discount?(merchant)
-    BulkDiscount.where(merchant_id: merchant.id).count > 0 
-  end
-
-  def merchant_invoice_items(merchant)
-    invoice_items.where('merchants.id = ? AND invoice_items.invoice_id = ?', merchant.id, id)
+  def total_merchant_revenue_after_discounts(merchant)
+    merchant.invoice_items.sum { |ii| ii.absolute_cost }
   end
 end
-
-
-
-
-
-
-    # if has_discount?(merchant)
-    #   discounted_transactions = merchant.invoice_items
-    #   .joins(:bulk_discounts, :item)
-    #   #.select('invoice_items.*, bulk_discount.threshold')
-    #   .where("invoice_items.quantity > bulk_discounts.threshold AND items.merchant_id = ?", merchant.id)
-    #   .group('invoice_items.id')
-    #   .sum('((invoice_items.quantity * invoice_items.unit_price) / 100) * (100 - bulk_discounts.percentage)')
-    #   .values
-    #   .sum 
-
-    #   regular_transactions = merchant.invoice_items
-    #   .joins(:bulk_discounts)
-    #  # .select('invoice_items.*, bulk_discount.threshold')
-    #   .where("bulk_discounts.threshold >= invoice_items.quantity AND items.merchant_id = ?", merchant.id)
-    #   .group('invoice_items.id')
-    #   .sum('invoice_items.quantity * invoice_items.unit_price')
-    #   .values
-    #   .sum
-
-    #   discounted_transactions + regular_transactions
-    # else 
-    #   regular_transactions = merchant.invoice_items
-    #   .joins(:merchants)
-    #   #.select('invoice_items.*, bulk_discount.threshold')
-    #   .where("merchants.id = ?", merchant.id)
-    #   .group('invoice_items.id')
-    #   .sum('invoice_items.quantity * invoice_items.unit_price')
-    #   .values
-    #   .sum 
-    # end 

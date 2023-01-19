@@ -39,4 +39,61 @@ RSpec.describe InvoiceItem, type: :model do
       expect(InvoiceItem.incomplete_invoices).to eq([@i1, @i3])
     end
   end
+
+  describe 'instance methods' do 
+    before :each do 
+      @merchant1 = Merchant.create!(name: 'Hair Care')
+      @merchant2 = Merchant.create!(name: 'Bob')
+      @item_1 = Item.create!(name: "Shampoo", description: "This washes your hair", unit_price: 10, merchant_id: @merchant1.id, status: 1)      
+      @item_8 = Item.create!(name: "Butterfly Clip", description: "This holds up your hair but in a clip", unit_price: 5, merchant_id: @merchant1.id)
+      @item_2 = Item.create!(name: "ASDF", description: "asdf", unit_price: 10, merchant_id: @merchant2.id)
+
+      @customer_1 = Customer.create!(first_name: 'Joey', last_name: 'Smith')
+      @invoice_1 = Invoice.create!(customer_id: @customer_1.id, status: 2, created_at: "2012-03-27 14:54:09")
+      
+      @ii_1 = InvoiceItem.create!(invoice_id: @invoice_1.id, item_id: @item_1.id, quantity: 9, unit_price: 10, status: 2) # discount
+      @ii_111 = InvoiceItem.create!(invoice_id: @invoice_1.id, item_id: @item_1.id, quantity: 10, unit_price: 1, status: 2) # discount
+      @ii_11 = InvoiceItem.create!(invoice_id: @invoice_1.id, item_id: @item_8.id, quantity: 1, unit_price: 10, status: 1)
+      
+      @ii_1111 = InvoiceItem.create!(invoice_id: @invoice_1.id, item_id: @item_2.id, quantity: 100, unit_price: 10, status: 2)
+    
+      
+    end
+
+    it 'applied_discount' do 
+      bd1 = BulkDiscount.create!(percentage: 50, threshold: 8, merchant_id: @merchant1.id)
+      bd2 = BulkDiscount.create!(percentage: 70, threshold: 8, merchant_id: @merchant1.id)
+      expect(@ii_1.applied_discount).to eq(bd2)
+      expect(@ii_1111.applied_discount).to eq(nil)
+    end
+
+    it 'has_applicable_discount?' do 
+      bd1 = BulkDiscount.create!(percentage: 50, threshold: 8, merchant_id: @merchant1.id)
+      expect(@ii_1.has_applicable_discount?).to eq(true)
+      expect(@ii_1111.has_applicable_discount?).to eq(false)
+    end
+
+    it 'discounts_exist?' do 
+      bd1 = BulkDiscount.create!(percentage: 50, threshold: 8, merchant_id: @merchant1.id)
+      expect(@ii_1.discounts_exist?).to eq(true)
+      expect(@ii_1111.discounts_exist?).to eq(false)
+    end
+
+    it 'cost_after_discount' do 
+      bd1 = BulkDiscount.create!(percentage: 50, threshold: 8, merchant_id: @merchant1.id)
+      expect(@ii_1.cost_after_discount).to eq(45)
+      expect(@ii_1111.cost_after_discount).to eq(1000)
+    end
+
+    it 'cost_before_discount' do 
+      bd1 = BulkDiscount.create!(percentage: 50, threshold: 8, merchant_id: @merchant1.id)
+      expect(@ii_1.cost_before_discount).to eq(90)
+    end
+
+    it 'absolute_cost' do 
+      bd1 = BulkDiscount.create!(percentage: 50, threshold: 8, merchant_id: @merchant1.id)
+      expect(@ii_1.absolute_cost).to eq(45)
+      expect(@ii_1111.absolute_cost).to eq(1000)
+    end
+  end
 end

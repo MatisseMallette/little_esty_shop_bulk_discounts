@@ -5,12 +5,14 @@ RSpec.describe Invoice, type: :model do
     it { should validate_presence_of :status }
     it { should validate_presence_of :customer_id }
   end
+  
   describe "relationships" do
     it { should belong_to :customer }
     it { should have_many(:items).through(:invoice_items) }
     it { should have_many(:merchants).through(:items) }
     it { should have_many :transactions}
   end
+
   describe "instance methods" do
     before :each do 
       @merchant1 = Merchant.create!(name: 'Hair Care')
@@ -32,34 +34,18 @@ RSpec.describe Invoice, type: :model do
       expect(@invoice_1.total_revenue).to eq(1110)
     end
 
-    it "total_merchant_revenue_with_discounts" do 
+    it 'total_revenue_after_discounts' do 
       bulk_discount1 = @merchant1.bulk_discounts.create!(percentage: 50, threshold: 8)
-      bulk_discount2 = @merchant2.bulk_discounts.create!(percentage: 50, threshold: 1000)
-      expect(@invoice_1.total_merchant_revenue_with_discounts(@merchant1)).to eq(60)
-      expect(@invoice_1.total_merchant_revenue_with_discounts(@merchant2)).to eq(1000)
-      bulk_discount3 = @merchant2.bulk_discounts.create!(percentage: 50, threshold: 8)
-      expect(@invoice_1.total_merchant_revenue_with_discounts(@merchant2)).to eq(500)
+      expect(@invoice_1.total_revenue_after_discounts).to eq(1060)
     end
 
-    it 'doesnt break' do 
-      expect(@invoice_1.total_merchant_revenue(@merchant1)).to eq(150) 
+    it 'total_merchant_revenue' do 
+      expect(@invoice_1.total_merchant_revenue(@merchant1)).to eq(110)
     end
-    
 
-    # it "total_invoice_revenue_with_discounts" do 
-    #   bulk_discount1 = @merchant1.bulk_discounts.create!(percentage: 50, threshold: 8)
-    #   bulk_discount2 = @merchant2.bulk_discounts.create!(percentage: 50, threshold: 1000)
-    #   expect(@invoice_1.total_invoice_revenue_with_discounts).to eq(1060)
-    # end
-
-    #  it "total_invoice_revenue_without_discounts" do 
-    #   bulk_discount1 = @merchant1.bulk_discounts.create!(percentage: 50, threshold: 8)
-    #   bulk_discount2 = @merchant2.bulk_discounts.create!(percentage: 50, threshold: 1000)
-    #   invoice_2 = Invoice.create!(customer_id: @customer_1.id, status: 2, created_at: "2012-03-27 14:54:09")
-    #   ii_11111 = InvoiceItem.create!(invoice_id: invoice_2.id, item_id: @item_2.id, quantity: 100, unit_price: 10, status: 2)
-
-    #   expect(@invoice_1.total_invoice_revenue_without_discounts).to eq(1010)
-    #   expect(invoice_2.total_invoice_revenue_without_discounts).to eq(1000)
-    # end
+    it 'total_merchant_revenue_after_discounts' do
+      bulk_discount1 = @merchant2.bulk_discounts.create!(percentage: 30, threshold: 8)
+      expect(@invoice_1.total_merchant_revenue_after_discounts(@merchant2)).to eq(700)
+    end
   end
 end
