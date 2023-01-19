@@ -10,7 +10,6 @@ class BulkDiscountsController < ApplicationController
   def show 
   end
 
-
   def edit 
 
   end
@@ -39,8 +38,6 @@ class BulkDiscountsController < ApplicationController
       flash[:alert] = "Error: #{error_message(bulk_discount.errors)}"
     end
   end
-
-
 
   def destroy 
     @bulk_discount.destroy

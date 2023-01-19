@@ -21,11 +21,13 @@ class InvoiceItem < ApplicationRecord
     bulk_discount = bulk_discounts
     .where('threshold < ? AND bulk_discounts.merchant_id = ?', quantity, merchant.id)
     .group(:id)
-    .order('bulk_discounts.threshold DESC')
+    .order('bulk_discounts.percentage DESC')
     .first
-    
-    #binding.pry
-    
+
     return bulk_discount
+  end
+
+  def cost_after_discount 
+    ((quantity * unit_price).to_f / 100) * (100 - applied_discount.percentage) 
   end
 end
