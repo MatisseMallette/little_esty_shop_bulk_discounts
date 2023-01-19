@@ -16,8 +16,9 @@
 
   <div id="current-invoice-status">
     <strong>Status: </strong><%= @invoice.status %><br>
-    Total revenue (not including discounts): <%=@invoice.total_revenue%><br>
-    Total revenue (including discounts): <%=@invoice.total_merchant_revenue_with_discounts(@merchant)%><br>
+    Total revenue for invoice (not including discounts): <%=@invoice.total_revenue%><br> 
+    Total revenue for merchant (after discounts): <%=@invoice.total_merchant_revenue_after_discounts(@merchant)%><br>
+    Total revenue for merchant (before discounts): <%=@invoice.total_merchant_revenue(@merchant)%><br>
   </div>
   <br>
 
@@ -46,8 +47,8 @@
         <section id="the-status-<%= i.id %>">
           <tr class="tr">
             <td style="text-align:center">
-            <% if i.applied_discount(@merchant) %>
-            <%= link_to "View Discount ##{i.applied_discount(@merchant).id}", merchant_bulk_discount_path(@merchant, i.applied_discount(@merchant)) %>
+            <% if i.applied_discount %>
+            <%= link_to "View Discount ##{i.applied_discount.id}", merchant_bulk_discount_path(@merchant, i.applied_discount) %>
             <% end %></td>
             <td style="text-align:center"><%= i.item.name %></td>
             <td style="text-align:center"><%= i.quantity %></td>

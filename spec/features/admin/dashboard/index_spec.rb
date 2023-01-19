@@ -86,8 +86,8 @@ describe 'Admin Dashboard Index Page' do
   end
 
   it 'should link to the invoice admin show page via id' do
-    expect(page).to have_link("Invoice # #{@i1.id}")
-    click_link("Invoice # #{@i1.id}")
+    expect(page).to have_link("Invoice ##{@i1.id}")
+    click_link("Invoice ##{@i1.id}")
 
     expect(current_path).to eq(admin_invoice_path(@i1))
   end

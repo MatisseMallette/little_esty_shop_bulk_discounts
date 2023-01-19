@@ -20,10 +20,26 @@ class Invoice < ApplicationRecord
   end
 
   def total_merchant_revenue(merchant) 
-    merchant.invoice_items.sum { |ii| ii.cost_before_discount }
+    invoice_items.sum do |ii| 
+      if merchant.invoice_items.include?(ii)
+        ii.cost_before_discount  
+      else 
+        0
+      end
+    end
   end
 
   def total_merchant_revenue_after_discounts(merchant)
-    merchant.invoice_items.sum { |ii| ii.absolute_cost }
+    invoice_items.sum do |ii| 
+      if merchant.invoice_items.include?(ii)
+        if ii.has_applicable_discount?
+          ii.absolute_cost
+        else 
+          0
+        end
+      else 
+        0
+      end
+    end
   end
 end

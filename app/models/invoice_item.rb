@@ -31,11 +31,9 @@ class InvoiceItem < ApplicationRecord
 
   def has_applicable_discount?
     if self.discounts_exist?
-      bulk_discounts.each do |bd| 
+      item.bulk_discounts.each do |bd| 
         if quantity > bd.threshold 
           return true
-        else  
-          return false 
         end
       end
     else 
@@ -48,13 +46,9 @@ class InvoiceItem < ApplicationRecord
   end
 
   def cost_after_discount
-    if self.discounts_exist?
-      if has_applicable_discount?
-        ((quantity * unit_price).to_f / 100) * (100 - applied_discount.percentage) 
-      else 
-        self.cost_before_discount 
-      end
-    else 
+    if self.discounts_exist? && self.has_applicable_discount? && self.applied_discount != nil 
+      ((quantity * unit_price).to_f / 100) * (100 - self.applied_discount.percentage) 
+    else
       self.cost_before_discount 
     end
   end

@@ -21,7 +21,7 @@
       </ul>
       <ul class='mr-auto col-sm-4'>
         <% @invoices.each do |i| %>
-          <li><%= link_to "Invoice # #{i.id}", admin_invoice_path(i.id) %></a> - <%= i.created_at.strftime("%A, %B %d, %Y") %>
+          <li><%= link_to "Invoice ##{i.id}", admin_invoice_path(i.id) %></a> - <%= i.created_at.strftime("%A, %B %d, %Y") %>
         <% end %>
       </ul>
   </div>
